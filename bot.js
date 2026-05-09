@@ -463,29 +463,26 @@ async function startBot() {
       }
 
       // ═══════════════════════════════════════════════════════
-      // REGULAR MESSAGE — Check mention/reply
+      // DETECT: $ai prefix (wajib untuk semua)
       // ═══════════════════════════════════════════════════════
+      if (!body.startsWith('$ai ')) return;
+      const cleanText = body.slice(4).trim();
+      if (!cleanText) return;
       let shouldReply = false;
-      let cleanText = body;
 
       if (!isGroup) {
-        // DM: always reply
+        // DM: $ai trigger, always reply
         shouldReply = true;
-        cleanText = body.startsWith('$ai ') ? body.slice(4).trim() : body;
-        console.log(`[DM] ${pushName}: ${body.slice(0, 60)}`);
+        console.log(`[DM] ${pushName}: ${cleanText.slice(0, 60)}`);
       } else {
-        // GROUP: only reply if @mentioned or replied to bot
+        // GROUP: $ai + must be @mentioned or replied to bot
         const isMentioned = body.includes(`@${sock.user.id.split(':')[0].split('@')[0]}`);
         const isReplyToBot = m.message?.extendedTextMessage?.contextInfo?.participant === sock.user.id;
 
         if (isMentioned || isReplyToBot) {
           shouldReply = true;
-          // Clean @mention prefix
-          cleanText = body.replace(/@\d+/g, '').trim();
-          if (cleanText.startsWith('$ai ')) cleanText = cleanText.slice(4).trim();
-          console.log(`[GRUP] ${pushName}: ${body.slice(0, 60)}`);
+          console.log(`[GRUP] ${pushName}: ${cleanText.slice(0, 60)}`);
         }
-        // Otherwise: just save to memory, don't reply
       }
 
       // ═══════════════════════════════════════════════════════
