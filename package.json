@@ -1,1 +1,1 @@
-{"name":"wa-godmode-bot","version":"1.0.0","dependencies":{"@hapi/boom":"*","@whiskeysockets/baileys":"*","dotenv":"*","pino":"^10.3.1"}}
+{"name":"wa-godmode-bot","version":"1.0.0","dependencies":{"@hapi/boom":"*","@libsql/client":"^0.17.3","@whiskeysockets/baileys":"*","dotenv":"*","pino":"^10.3.1"}}
