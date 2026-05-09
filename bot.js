@@ -199,37 +199,50 @@ async function startBot() {
     }
   });
 
+  // ── MESSAGE HANDLER (Pola BOT-DISCORD fix) ────────────────
   sock.ev.on('messages.upsert', async ({ messages, type }) => {
     if (type !== 'notify') return;
-    const msg = messages[0];
-    if (!msg.message || msg.key.fromMe) return;
+    const m = messages[0];
+    if (!m.message) return;
+    if (m.key.fromMe) return;
 
-    const m = msg.message;
-    let text = m.conversation || m.extendedTextMessage?.text || m.imageMessage?.caption || m.videoMessage?.caption || '';
-    if (!text) return;
+    try {
+      const remoteJid = m.key.remoteJid;
+      const isGroup   = remoteJid.endsWith('@g.us');
+      const sender    = isGroup ? (m.key.participant || m.participant) : remoteJid;
+      const pushName  = m.pushName || 'Unknown';
+      const body      = m.message.conversation
+                     || m.message.extendedTextMessage?.text
+                     || m.message.imageMessage?.caption
+                     || m.message.videoMessage?.caption || '';
 
-    const sender = msg.key.remoteJid;
-    const isGroup = sender.endsWith('@g.us');
-    const botNum = botJid?.split(':')[0].split('@')[0];
+      if (!body) return;
 
-    let shouldReply = false;
-    let cleanText = text;
+      const botNum = botJid?.split(':')[0].split('@')[0];
+      if (!botNum) return;
 
-    if (!isGroup) {
-      shouldReply = true;
-    } else {
-      const mentioned = text.includes('@' + botNum);
-      if (mentioned) {
+      let shouldReply = false;
+      let cleanText = body;
+
+      if (!isGroup) {
         shouldReply = true;
-        cleanText = text.replace(new RegExp('@' + botNum, 'g'), '').trim();
+        console.log(`[DM] ${pushName}: ${body.slice(0, 60)}`);
+      } else {
+        const mentioned = body.includes('@' + botNum);
+        if (mentioned) {
+          shouldReply = true;
+          cleanText = body.replace(new RegExp('@' + botNum, 'g'), '').trim();
+          console.log(`[GRUP] ${pushName}: ${body.slice(0, 60)}`);
+        }
       }
-    }
 
-    if (shouldReply && cleanText) {
-      console.log(`[${isGroup ? 'GRUP' : 'DM'}] ${cleanText.slice(0, 80)}`);
-      await sock.sendPresenceUpdate('composing', sender);
-      const answer = await askGodmode(cleanText);
-      await sock.sendMessage(sender, { text: answer.slice(0, 4000) });
+      if (shouldReply && cleanText) {
+        await sock.sendPresenceUpdate('composing', remoteJid);
+        const answer = await askGodmode(cleanText);
+        await sock.sendMessage(remoteJid, { text: answer.slice(0, 4000) }, { quoted: m });
+      }
+    } catch (e) {
+      console.error('[Message Handler]', e.message);
     }
   });
 
