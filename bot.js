@@ -475,14 +475,9 @@ async function startBot() {
         shouldReply = true;
         console.log(`[DM] ${pushName}: ${cleanText.slice(0, 60)}`);
       } else {
-        // GROUP: $ai + must be @mentioned or replied to bot
-        const isMentioned = body.includes(`@${sock.user.id.split(':')[0].split('@')[0]}`);
-        const isReplyToBot = m.message?.extendedTextMessage?.contextInfo?.participant === sock.user.id;
-
-        if (isMentioned || isReplyToBot) {
-          shouldReply = true;
-          console.log(`[GRUP] ${pushName}: ${cleanText.slice(0, 60)}`);
-        }
+        // GROUP: $ai trigger, always reply
+        shouldReply = true;
+        console.log(`[GRUP] ${pushName}: ${cleanText.slice(0, 60)}`);
       }
 
       // ═══════════════════════════════════════════════════════
