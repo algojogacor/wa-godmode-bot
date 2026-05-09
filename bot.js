@@ -219,19 +219,20 @@ async function startBot() {
       if (!body) return;
 
       const botNum = botJid?.split(':')[0].split('@')[0];
-      if (!botNum) return;
 
       let shouldReply = false;
       let cleanText = body;
 
+      // DM: auto-reply always
       if (!isGroup) {
         shouldReply = true;
+        cleanText = body.startsWith('$ai ') ? body.slice(4).trim() : body;
         console.log(`[DM] ${pushName}: ${body.slice(0, 60)}`);
       } else {
-        const mentioned = body.includes('@' + botNum);
-        if (mentioned) {
+        // Grup: prefix $ai
+        if (body.startsWith('$ai ')) {
           shouldReply = true;
-          cleanText = body.replace(new RegExp('@' + botNum, 'g'), '').trim();
+          cleanText = body.slice(4).trim();
           console.log(`[GRUP] ${pushName}: ${body.slice(0, 60)}`);
         }
       }
